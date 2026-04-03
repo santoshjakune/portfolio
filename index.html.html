@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Santosh Portfolio</title>
+
+<style>
+/* Background */
+body{
+    margin:0;
+    font-family:Arial;
+    background: linear-gradient(-45deg, #0f172a, #1e3a8a, #9333ea, #ff00c8);
+    background-size:400% 400%;
+    animation:bg 10s ease infinite;
+    color:white;
+}
+
+@keyframes bg{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+/* NAVBAR */
+nav{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 40px;
+    position:sticky;
+    top:0;
+    background:rgba(0,0,0,0.4);
+    backdrop-filter:blur(10px);
+    z-index:1000;
+  border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+}
+
+/* Logo */
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color:#00f5ff;
+}
+
+/* Menu */
+.nav-links{
+    display:flex;
+    gap:20px;
+}
+
+.nav-links a{
+    color:white;
+    text-decoration:none;
+    position:relative;
+    padding:5px;
+}
+
+/* Hover underline animation */
+.nav-links a::after{
+    content:"";
+    position:absolute;
+    width:0%;
+    height:2px;
+    left:0;
+    bottom:-3px;
+    background:#00f5ff;
+    transition:0.3s;
+}
+
+.nav-links a:hover::after{
+    width:100%;
+}
+
+/* Hamburger */
+.menu-btn{
+    display:none;
+    font-size:25px;
+    cursor:pointer;
+}
+
+/* Hero */
+.hero{
+    text-align:center;
+    padding:100px 20px;
+}
+
+.typing{
+    color:#00f5ff;
+}
+
+/* Buttons */
+button{
+    padding:12px 25px;
+    margin:10px;
+    border:none;
+    background:linear-gradient(45deg,#00f5ff,#ff00c8);
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+button:hover{
+    transform:scale(1.1);
+}
+
+/* Sections */
+section{
+    padding:60px 20px;
+    text-align:center;
+}
+
+/* Cards */
+.cards{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:20px;
+}
+
+.card{
+    background:rgba(255,255,255,0.1);
+    backdrop-filter:blur(10px);
+    padding:20px;
+    width:250px;
+    border-radius:15px;
+    border:1px solid rgba(255,255,255,0.2);
+
+    opacity:0;
+    transform:translateY(50px);
+    transition:0.6s;
+}
+
+.card.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+/* MOBILE */
+@media(max-width:768px){
+    .nav-links{
+        position:absolute;
+        top:60px;
+        right:0;
+        background:#020617;
+        flex-direction:column;
+        width:200px;
+        display:none;
+    }
+
+    .nav-links.active{
+        display:flex;
+    }
+
+    .menu-btn{
+        display:block;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">Santosh</div>
+
+    <div class="menu-btn" onclick="toggleMenu()">☰</div>
+
+    <div class="nav-links" id="navLinks">
+        <a href="#about">About</a>
+        <a href="#skills">Skills</a>
+        <a href="#projects">Projects</a>
+        <a href="Santosh_Resume.pdf" target="_blank">Resume</a>
+        <a href="#contact">Contact</a>
+    </div>
+</nav>
+
+<div class="hero">
+    <h1>Hi, I'm Santosh 👋</h1>
+    <h2 class="typing"></h2>
+
+    <a href="#contact"><button>Hire Me</button></a>
+    <a href="Santosh_Resume.pdf" target="_blank"><button>View Resume</button></a>
+</div>
+
+<section id="about">
+    <h2>About Me</h2>
+    <p>Full Stack Developer + QA Tester + Power BI Developer</p>
+</section>
+
+<section id="skills">
+    <h2>Skills</h2>
+    <div class="cards">
+        <div class="card">Python</div>
+        <div class="card">Django</div>
+        <div class="card">JavaScript</div>
+        <div class="card">React</div>
+        <div class="card">Power BI</div>
+        <div class="card">Manual Testing</div>
+        <div class="card">QA Automation</div>
+    </div>
+</section>
+
+<section id="projects">
+    <h2>Projects</h2>
+    <div class="cards">
+        <div class="card">Home Rental Management System</div>
+        <div class="card">Power BI Dashboard</div>
+        <div class="card">Automation Testing Suite</div>
+    </div>
+</section>
+
+<section id="contact">
+    <h2>Contact</h2>
+    <p>Email: santoshjakune3740@email.com</p>
+    <p>Phon NO: 7559198564</p>
+</section>
+
+<script>
+// Typing Effect
+const text = "Full Stack Developer | QA Engineer | Power BI Developer";
+let i = 0;
+function typing(){
+    if(i < text.length){
+        document.querySelector(".typing").innerHTML += text.charAt(i);
+        i++;
+        setTimeout(typing,80);
+    }
+}
+typing();
+
+// Scroll Animation
+window.addEventListener("scroll",()=>{
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card=>{
+        const top = card.getBoundingClientRect().top;
+        if(top < window.innerHeight - 50){
+            card.classList.add("show");
+        }
+    });
+});
+
+// Toggle Menu (Mobile)
+function toggleMenu(){
+    document.getElementById("navLinks").classList.toggle("active");
+}
+</script>
+
+</body>
+</html>
