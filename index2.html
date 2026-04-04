@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Santosh jaklune</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Space+Grotesk:wght@300;500;700&family=JetBrains+Mono:wght@400&display=swap"
+            rel="stylesheet"
+        />
+
+        <style>
+            :root {
+                --neon: #00f3ff;
+                --plasma: #bc13fe;
+                --void: #030005;
+            }
+
+            body {
+                background-color: var(--void);
+                color: #a90e8a;
+                font-family: "Space Grotesk", sans-serif;
+                overflow-x: hidden;
+                cursor: none;
+            }
+
+            /* --- VISUAL FX --- */
+            .overlay-grain {
+                position: fixed;
+                inset: 0;
+                background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
+                pointer-events: none;
+                z-index: 9998;
+                mix-blend-mode: overlay;
+            }
+
+            .overlay-vignette {
+                position: fixed;
+                inset: 0;
+                background: radial-gradient(
+                    circle at center,
+                    transparent 0%,
+                    oklch(54.502% 0.19526 324.901 / 0.242) 100%
+                );
+                pointer-events: none;
+                z-index: 9997;
+            }
+
+            /* --- CURSOR --- */
+            #cursor {
+                position: fixed;
+                width: 20px;
+                height: 20px;
+                border: 1px solid var(--neon);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                pointer-events: none;
+                z-index: 10000;
+                transition: width 0.3s, height 0.3s;
+                mix-blend-mode: difference;
+            }
+            #cursor-dot {
+                position: fixed;
+                width: 4px;
+                height: 4px;
+                background: var(--neon);
+                border-radius: 50%;
+                transform: translate(-50%, -50%);
+                pointer-events: none;
+                z-index: 10001;
+            }
+
+            /* --- GLITCH TYPOGRAPHY (FIXED) --- */
+            .hero-glitch {
+                font-family: "Syncopate", sans-serif;
+                font-weight: 700;
+                font-size: 11vw; /* Slightly reduced to fit better */
+                line-height: 0.9;
+                letter-spacing: -0.05em;
+                text-transform: uppercase;
+                background: linear-gradient(to bottom, #743a3a, #888);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                position: relative;
+
+                /* THE FIX: Prevents line breaking */
+                white-space: nowrap;
+                display: inline-block;
+            }
+
+            /* Text Stroke Effect for 'The Future' */
+            .text-stroke {
+                -webkit-text-stroke: 1px rgba(255, 255, 255, 0.5);
+                -webkit-text-fill-color: rgb(51, 51, 52);
+                background: none;
+            }
+            .text-stroke:hover {
+                -webkit-text-fill-color: rgb(75, 71, 71);
+            }
+
+            /* --- 3D CARDS --- */
+            .holo-card {
+                background: rgba(255, 255, 255, 0.03);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                transform-style: preserve-3d;
+                transition: border-color 0.3s;
+            }
+            .holo-content {
+                transform: translateZ(30px);
+            }
+            .holo-card:hover {
+                border-color: var(--neon);
+                box-shadow: 0 0 40px rgba(21, 6, 104, 0.15);
+            }
+
+            /* --- BOOT SCREEN --- */
+            #boot-screen {
+                position: fixed;
+                inset: 0;
+                background: #000;
+                z-index: 10002;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                padding: 40px;
+            }
+            canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: -1;
+            }
+            .mono {
+                font-family: "JetBrains Mono", monospace;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- LAYERS -->
+        <div id="cursor"></div>
+        <div id="cursor-dot"></div>
+        <div class="overlay-grain"></div>
+        <div class="overlay-vignette"></div>
+        <canvas id="warp-drive"></canvas>
+
+        <!-- LOADING SCREEN -->
+        <div id="boot-screen">
+            <div
+                id="terminal-output"
+                class="mono text-cyan-500 text-xs space-y-1"
+            ></div>
+            <div class="w-full h-1 bg-white/10 mt-6 relative overflow-hidden">
+                <div
+                    id="boot-bar"
+                    class="absolute h-full bg-cyan-400 w-0"
+                ></div>
+            </div>
+        </div>
+
+        <!-- NAV -->
+        <nav
+            class="fixed top-0 w-full z-50 px-8 py-6 flex justify-between items-center mix-blend-difference"
+        >
+            <div
+                class="mono text-[20px] font-bold tracking-[0.2em] uppercase text-white hover:text-cyan-400 transition cursor-none"
+            >
+                Santosh jakune
+            </div>
+            <div class="flex gap-8">
+                <a
+                    href="#projects"
+                    class="mono text-[10px] uppercase tracking-widest hover:text-cyan-400 transition cursor-none nav-link"
+                    >[ Projects ]</a
+                >
+
+                <!-- <a
+                    href="#projects"
+                    class="mono text-[10px] uppercase tracking-widest hover:text-cyan-400 transition cursor-none nav-link"
+                    >[ About Me ]</a
+                > -->
+                <a
+                    href="mailto:santoshjakune3740@gmail.com"
+                    class="mono text-[10px] uppercase tracking-widest hover:text-cyan-400 transition cursor-none nav-link"
+                    >[ Encrypted_Comms ]</a
+                >
+            </div>
+        </nav>
+
+        <main class="relative z-10 px-4 md:px-8">
+            <!-- HERO -->
+            <section
+                class="min-h-screen flex flex-col justify-center items-center text-center"
+            >
+                <div
+                    class="mono text-cyan-400 text-xs tracking-[0.5em] mb-8 opacity-0 reveal-text"
+                >
+                   SANTOSH PORTFOLIO // 2025
+                    <!-- SYSTEM ARCHITECT // 2025 -->
+                </div>
+
+                <h1
+                    class="hero-glitch opacity-0 reveal-text"
+                    data-value="BY SANTOSH"
+                >
+                   BY SANTOSH
+                </h1>
+                <h1
+                    class="hero-glitch text-stroke opacity-0 reveal-text"
+                    data-value="JAKUNE🤝"
+                >
+                    JAKUNE🤝
+                </h1>
+
+                <div
+                    class="mt-16 max-w-2xl text-gray-400 text-lg leading-relaxed opacity-0 reveal-text font-light"
+                >
+                    santosh. Building high-velocity
+                    <span class="text-white font-bold">Machine Learning</span>
+                    pipelines and
+                    <span class="text-white font-bold"
+                        >Next-Gen Architectures</span
+                    >
+                    at GRIET.
+                </div>
+
+                <div class="mt-12 flex gap-6 opacity-0 reveal-text">
+                    <a
+                        href="https://santoshjakune.github.io/browsine/"
+                        class="px-8 py-4 border border-white/20 mono text-xs uppercase hover:bg-white hover:text-black transition tracking-widest nav-link"
+                        >GitHub_Repo</a
+                    >
+                    <a
+                        href="https://www.linkedin.com/in/santosh-jakune-41a7953b4?utm_source=share_via&utm_content=profile&utm_medium=member_android"
+                        class="px-8 py-4 border border-cyan-500/50 text-cyan-400 mono text-xs uppercase hover:bg-cyan-500 hover:text-black hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition tracking-widest nav-link"
+                        >LinkedIn_Link</a
+                    >
+                </div>
+            </section>
+
+            <!-- STATS -->
+            <section
+                class="max-w-7xl mx-auto mb-40 grid grid-cols-2 md:grid-cols-4 gap-4"
+            >
+                <div class="holo-card p-8 rounded-xl tilt-element">
+                    <div class="holo-content">
+                        <div
+                            class="mono text-[9px] text-gray-500 uppercase tracking-widest mb-2"
+                        >
+                            SSC.Percentage
+                        </div>
+                        <div
+                            class="text-5xl font-bold text-white tracking-tighter"
+                        >
+                            70%
+                        </div>
+                        <div class="w-full h-[2px] bg-white/10 mt-4">
+                            <div class="h-full bg-orange-500 w-[85%]"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="holo-card p-8 rounded-xl tilt-element">
+                    <div class="holo-content">
+                        <div
+                            class="mono text-[9px] text-gray-500 uppercase tracking-widest mb-2"
+                        >
+                            HsC.Percentage
+                        </div>
+                        <div
+                            class="text-5xl font-bold text-white tracking-tighter"
+                        >
+                            64%
+                        </div>
+                        <div class="w-full h-[2px] bg-white/10 mt-4">
+                            <div class="h-full bg-yellow-500 w-[78%]"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="holo-card p-8 rounded-xl tilt-element">
+                    <div class="holo-content">
+                        <div
+                            class="mono text-[9px] text-gray-500 uppercase tracking-widest mb-2"
+                        >
+                            Academic.CGPA
+                        </div>
+                        <div
+                            class="text-5xl font-bold text-cyan-400 tracking-tighter"
+                        >
+                            7.38
+                        </div>
+                        <div class="w-full h-[2px] bg-white/10 mt-4">
+                            <div class="h-full bg-cyan-400 w-[94%]"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="holo-card p-8 rounded-xl tilt-element">
+                    <div class="holo-content">
+                        <div
+                            class="mono text-[9px] text-gray-500 uppercase tracking-widest mb-2"
+                        >
+                            Codeforces
+                        </div>
+                        <div
+                            class="text-5xl font-bold text-white tracking-tighter"
+                        >
+                            1121
+                        </div>
+                        <div class="w-full h-[2px] bg-white/10 mt-4">
+                            <div class="h-full bg-blue-600 w-[60%]"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PROJECTS -->
+            <section id="projects" class="max-w-7xl mx-auto pb-40">
+                <div
+                    class="flex items-end justify-between mb-20 border-b border-white/10 pb-8"
+                >
+                    <h2
+                        class="text-6xl md:text-8xl font-bold tracking-tighter opacity-80"
+                    >
+                        SELECTED<br />WORKS
+                    </h2>
+                    <div class="mono text-xs text-cyan-500 animate-pulse">
+                        /// SCROLL_DETECTED
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                    <!-- JPMC -->
+                    <div
+                        class="md:col-span-8 holo-card rounded-3xl p-10 md:p-14 tilt-element relative overflow-hidden group min-h-[500px] flex flex-col justify-between"
+                    >
+                        <div class="holo-content relative z-10">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-2 h-2 bg-green-500 rounded-full animate-ping"
+                                ></div>
+                                <span
+                                    class="mono text-xs text-green-400 uppercase tracking-widest">
+                                    <!-- JPMorgan Winner 2025</span> -->
+                                
+                            </div>
+                            <h3
+                                class="text-4xl md:text-6xl font-bold leading-none mb-6"
+                            >
+                                 <br />
+                                
+                            </h3>
+                            <p class="text-gray-400 max-w-md text-lg">
+                             A JCB Rental Management System is a web app used to manage renting of JCB machines.
+                          React (Frontend): Displays JCB list, booking form, user dashboard
+                          SQL (Database): Stores users, JCB details, and bookings
+                            Backend (API): Connects React with SQL
+                            </p>
+                        </div>
+                        <div class="holo-content relative z-10 flex gap-4 mt-8">
+                            <span
+                                class="px-4 py-2 border border-white/10 rounded-full mono text-[10px] uppercase"
+                                >React</span
+                            >
+                            <span
+                                class="px-4 py-2 border border-white/10 rounded-full mono text-[10px] uppercase"
+                                >Twilio</span
+                            >
+                        </div>
+                        <div
+                            class="absolute -right-20 top-20 opacity-10 group-hover:opacity-20 transition duration-500"
+                        >
+                            <i
+                                data-lucide="trophy"
+                                class="w-96 h-96 text-cyan-400 rotate-12"
+                            ></i>
+                        </div>
+                    </div>
+
+                    <!-- HOME RENTAL MANAGE -->
+                    <div
+                        class="md:col-span-4 holo-card rounded-3xl p-10 tilt-element relative overflow-hidden group flex flex-col justify-between"
+                    >
+                        <div class="holo-content relative z-10">
+                            <div
+                                class="mono text-xs text-blue-400 uppercase tracking-widest mb-6"
+                            >
+                                /// MACHINE LEARINIG_PIPELINE
+                            </div>
+                            <h3 class="text-3xl font-bold leading-tight mb-4">
+                                HOME RANTAL MANAGEMENT<br />SYSTEM
+                            </h3>
+                            <div class="text-5xl font-bold text-white/20 mb-2">
+                                75%
+                            </div>
+                            <p
+                                class="text-gray-500 text-xs uppercase tracking-widest"
+                            >
+                                Accuracy on Customer Data
+                            </p>
+                        </div>
+                        <a
+                            href="https://santoshjakune.github.io/browsine/"
+                            class="holo-content w-16 h-16 rounded-full border border-white/20 flex items-center justify-center hover:bg-cyan-500 hover:text-black transition duration-300 nav-link"
+                        >
+                            <i data-lucide="arrow-up-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- GRAPH VIZ -->
+                    <div
+                        class="md:col-span-12 holo-card rounded-3xl p-10 md:p-14 tilt-element relative overflow-hidden flex flex-col md:flex-row items-center gap-12 group"
+                    >
+                        <div class="holo-content flex-1 z-10">
+                            <span
+                                class="mono text-xs text-purple-400 uppercase tracking-widest"
+                                >/// ALGORITHM_ENGINE</span
+                            >
+                            <h3
+                                class="text-5xl md:text-7xl font-bold mt-4 mb-6"
+                            >
+                                GRAPH<br />VISUALIZER
+                            </h3>
+                            <p class="text-gray-400 text-lg max-w-2xl">
+                                Interactive React engine using Cytoscape.js.
+                                Visualizes BFS, DFS, and Shortest Path traversal
+                                in real-time. Designed to deconstruct complex
+                                logic for developers.
+                            </p>
+                            <a
+                                href=""
+                                class="inline-flex items-center gap-2 mt-8 mono text-xs uppercase border-b border-cyan-500 pb-1 text-cyan-400 hover:text-white transition nav-link"
+                            >
+                                View Source Code
+                                <i
+                                    data-lucide="chevron-right"
+                                    class="w-3 h-3"
+                                ></i>
+                            </a>
+                        </div>
+                        <div
+                            class="holo-content w-full md:w-1/3 aspect-video rounded-xl border border-white/10 bg-black/50 flex items-center justify-center relative overflow-hidden group-hover:border-cyan-500/30 transition duration-500"
+                        >
+                            <div
+                                class="text-cyan-500 font-bold mono text-xl z-10"
+                            >
+                                DEV_MODE
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <footer
+                class="py-20 text-center relative z-10 border-t border-white/5"
+            >
+                <div
+                    class="mono text-xs text-gray-500 uppercase tracking-[0.5em] mb-4"
+                >
+                    THAK YOU🤝
+                </div>
+                <a
+                    href="mailto:santoshjakune3740@gmail.com@gmail.com"
+                    class="text-2xl font-bold hover:text-cyan-400 transition nav-link"
+                    >santoshjakune3740@gmail.com</a
+                >
+            </footer>
+        </main>
+
+        <script>
+            // --- BOOT SEQUENCE ---
+            const terminal = document.getElementById("terminal-output");
+            const bootBar = document.getElementById("boot-bar");
+            const bootScreen = document.getElementById("boot-screen");
+            const logs = [
+                "Initializing Kernel...",
+                "Loading Modules: REACT, TAILWIND...",
+                "Connecting to GitHub API...",
+                "ACCESS GRANTED.",
+            ];
+            let logIndex = 0;
+
+            function addLog() {
+                if (logIndex < logs.length) {
+                    const p = document.createElement("div");
+                    p.textContent = `> ${logs[logIndex]}`;
+                    terminal.appendChild(p);
+                    logIndex++;
+                    gsap.to(bootBar, {
+                        width: `${(logIndex / logs.length) * 100}%`,
+                        duration: 0.2,
+                    });
+                    setTimeout(addLog, 250);
+                } else {
+                    gsap.to(bootScreen, {
+                        y: "-100%",
+                        duration: 0.8,
+                        ease: "power4.inOut",
+                        delay: 0.5,
+                    });
+                    startIntro();
+                }
+            }
+            setTimeout(addLog, 500);
+
+            // --- CURSOR LOGIC ---
+            const cursor = document.getElementById("cursor");
+            const cursorDot = document.getElementById("cursor-dot");
+            const navLinks = document.querySelectorAll(".nav-link");
+
+            window.addEventListener("mousemove", (e) => {
+                gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+                gsap.to(cursorDot, { x: e.clientX, y: e.clientY, duration: 0 });
+            });
+
+            navLinks.forEach((link) => {
+                link.addEventListener("mouseenter", () =>
+                    gsap.to(cursor, { scale: 3, borderColor: "#fff" })
+                );
+                link.addEventListener("mouseleave", () =>
+                    gsap.to(cursor, { scale: 1, borderColor: "#00f3ff" })
+                );
+            });
+
+            // --- HACKER TEXT EFFECT (FIXED) ---
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789";
+            document.querySelectorAll(".hero-glitch").forEach((header) => {
+                header.addEventListener("mouseover", (event) => {
+                    let iterations = 0;
+                    const interval = setInterval(() => {
+                        event.target.innerText = event.target.innerText
+                            .split("")
+                            .map((letter, index) => {
+                                if (index < iterations)
+                                    return event.target.dataset.value[index];
+                                return letters[
+                                    Math.floor(Math.random() * letters.length)
+                                ];
+                            })
+                            .join("");
+                        if (iterations >= event.target.dataset.value.length)
+                            clearInterval(interval);
+                        iterations += 1 / 3;
+                    }, 30);
+                });
+            });
+
+            // --- 3D TILT ---
+            document.querySelectorAll(".tilt-element").forEach((card) => {
+                card.addEventListener("mousemove", (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    card.style.transform = `perspective(1000px) rotateX(${
+                        ((y - rect.height / 2) / rect.height / 2) * -10
+                    }deg) rotateY(${
+                        ((x - rect.width / 2) / rect.width / 2) * 10
+                    }deg)`;
+                });
+                card.addEventListener("mouseleave", () => {
+                    card.style.transform = `perspective(1000px) rotateX(0) rotateY(0)`;
+                });
+            });
+
+            // --- WARP BACKGROUND ---
+            const canvas = document.getElementById("warp-drive");
+            const ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let stars = [],
+                speed = 2;
+
+            for (let i = 0; i < 400; i++)
+                stars.push({
+                    x: Math.random() * canvas.width - canvas.width / 2,
+                    y: Math.random() * canvas.height - canvas.height / 2,
+                    z: Math.random() * canvas.width,
+                });
+
+            function animateWarp() {
+                ctx.fillStyle = "rgba(3, 0, 5, 0.4)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                stars.forEach((star) => {
+                    star.z -= speed;
+                    if (star.z <= 0) {
+                        star.z = canvas.width;
+                        star.x =
+                            Math.random() * canvas.width - canvas.width / 2;
+                        star.y =
+                            Math.random() * canvas.height - canvas.height / 2;
+                    }
+                    let x = (star.x / star.z) * canvas.width + canvas.width / 2;
+                    let y =
+                        (star.y / star.z) * canvas.height + canvas.height / 2;
+                    let size = (canvas.width / star.z) * 1.5;
+                    ctx.fillStyle =
+                        "rgba(255,255,255," + (1 - star.z / canvas.width) + ")";
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(animateWarp);
+            }
+            animateWarp();
+
+            window.addEventListener(
+                "mousemove",
+                (e) => (speed = 2 + (e.clientX / window.innerWidth) * 10)
+            );
+
+            function startIntro() {
+                lucide.createIcons();
+                gsap.to(".reveal-text", {
+                    y: 0,
+                    opacity: 1,
+                    stagger: 0.1,
+                    duration: 1.5,
+                    ease: "power4.out",
+                });
+            }
+        </script>
+    </body>
+</html>
